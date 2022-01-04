@@ -19,11 +19,11 @@ def go(args):
     run.config.update(args)
 
     # Reading the file
-    logger.info("Downloading artifact")
+    logger.info(f"Downloading artifact '{args.input_artifact}'")
     artifact = run.use_artifact(args.input_artifact)
     artifact_path = artifact.file()
-    logger.info("Reading artifact as *.csv")
-    df = pd.read_csv(local_path)
+    logger.info(f"Reading artifact '{artifact_path}'as *.csv")
+    df = pd.read_csv(artifact_path)
 
     # Drop the outliers
     logger.info(f"Dropping outliers (column=price;value=({args.min_price},{args.max_price}))")
@@ -35,9 +35,8 @@ def go(args):
     df['last_review'] = pd.to_datetime(df['last_review'])
 
     # Create file output
-    filename = "clean_sample.csv"
-    logger.info(f"Saving output file (file={filename})")
-    df.to_csv(filename, index=False)
+    logger.info(f"Saving output file (file={args.output_artifact})")
+    df.to_csv(args.output_artifact, index=False)
 
     # Create WandB Artifact
     logger.info("Creating wandb artifact")
@@ -46,14 +45,14 @@ def go(args):
         type=args.output_type,
         description=args.output_description,
     )
-    artifact.add_file(filename)
+    artifact.add_file(args.output_artifact)
 
-    logger.info(f"Logging artifact (name={output_artifact})")
+    logger.info(f"Logging artifact (name={args.output_artifact})")
     run.log_artifact(artifact)
 
     # Clean up, as file is logged
     logger.info("Cleaning up")
-    os.remove(filename)
+    os.remove(args.output_artifact)
 
 
 if __name__ == "__main__":
