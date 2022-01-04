@@ -25,9 +25,15 @@ def go(args):
     logger.info(f"Reading artifact '{artifact_path}'as *.csv")
     df = pd.read_csv(artifact_path)
 
-    # Drop the outliers
+    # Drop the outliers (by price)
     logger.info(f"Dropping outliers (column=price;value=({args.min_price},{args.max_price}))")
     idx = df['price'].between(args.min_price, args.max_price)
+    df = df[idx].copy()
+
+    # Drop the outliers (by longitude)
+    logger.info("Dropping outliers (column=longitude;value=(-74.25, -73.50))")
+    logger.info("Dropping outliers (column=latitude;value=(40.5, 41.2))")
+    idx = df['longitude'].between(-74.25, -73.50) & df['latitude'].between(40.5, 41.2)
     df = df[idx].copy()
 
     # Conversion
